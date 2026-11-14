@@ -21,6 +21,7 @@ const ENRICH_CACHE_LOADERS = {
   steamReviews: "loadSteamReviewCache",
   steamCovers: "loadSteamCoversMeta",
   steamTags: "loadSteamTagsMeta",
+  genres: "loadGenresCache",
   protondb: "loadProtondbCache",
 };
 
@@ -60,7 +61,7 @@ describe("reloadAfterFetcher source routing", () => {
       (k) => !ENRICH_RELOAD_WISHLIST_KEYS.has(k),
     );
     expect(wishlistOnly.sort()).toEqual(
-      ["protondb", "steamReviews", "steamTags"].sort(),
+      ["genres", "protondb", "steamReviews", "steamTags"].sort(),
     );
   });
 

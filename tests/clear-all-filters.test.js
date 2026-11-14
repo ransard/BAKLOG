@@ -37,4 +37,25 @@ describe('clearAllFilters deal prefs', () => {
     expect(state.prefs.storeFilter).toBe('');
     expect(state.prefs.genreFilters).toEqual([]);
   });
+
+  it('removes HLTB bound pills independently and resets the range with Clear all', async () => {
+    const { state } = await import('../js/state.js');
+    const { clearAllFilters, removeActiveFilter } = await import('../js/filters-ui.js');
+    state.sessionPrefs.minHours = 5.5;
+    state.sessionPrefs.maxHours = 20;
+    removeActiveFilter('minHours');
+    expect(state.sessionPrefs.minHours).toBe(0);
+    expect(state.sessionPrefs.maxHours).toBe(20);
+    expect(document.getElementById('minHours').value).toBe('0');
+    expect(document.getElementById('maxHoursVal').textContent).toBe('20');
+    state.sessionPrefs.minHours = 10;
+    removeActiveFilter('maxHours');
+    expect(state.sessionPrefs.minHours).toBe(10);
+    expect(state.sessionPrefs.maxHours).toBe(200);
+    expect(document.getElementById('maxHoursVal').textContent).toBe('200+');
+    clearAllFilters();
+    expect(state.sessionPrefs.minHours).toBe(0);
+    expect(state.sessionPrefs.maxHours).toBe(200);
+    expect(document.getElementById('minHoursVal').textContent).toBe('0');
+  });
 });

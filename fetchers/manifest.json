@@ -431,6 +431,19 @@
       "color": "#ea580c"
     },
     {
+      "key": "genres",
+      "label": "Genres",
+      "group": "enrich",
+      "script": "enrichers/enrich_genres.py",
+      "refreshArgs": [
+        "--retry-misses",
+        "--refresh"
+      ],
+      "metaKey": "genres",
+      "color": "#ea580c",
+      "maxRunSeconds": 0
+    },
+    {
       "key": "steamTags",
       "label": "Co-op tags",
       "group": "enrich",

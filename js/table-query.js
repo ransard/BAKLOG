@@ -30,7 +30,7 @@ export function escapeAttr(s) {
 }
 
 /**
- * Snapshot the 6 in-flight filter controls.
+ * Snapshot the in-flight filter controls.
  *
  * Reads from the supplied `sessionPrefs` object — typically `state.sessionPrefs`.
  * Pass it explicitly so this module stays importable from the worker (which
@@ -45,6 +45,7 @@ export function collectTableParams(sessionPrefs) {
     earlyAccess: !!s.earlyAccessOnly,
     staleOnly: !!s.staleOnly,
     minRating: +(s.minRating || 0),
+    minHours: +(s.minHours || 0),
     maxHours: s.maxHours == null ? 200 : +s.maxHours,
   };
 }
@@ -355,6 +356,10 @@ function passesFilter(ctx, g) {
   const rating = ratingValue(g);
   if (params.minRating > 0 && rating < params.minRating) return false;
   const h = hltbMain(personal, g);
+  if (params.minHours > 0 || params.maxHours < 200) {
+    if (h == null || h === '' || !Number.isFinite(Number(h)) || Number(h) < 0) return false;
+    if (params.minHours > 0 && h < params.minHours) return false;
+  }
   if (params.maxHours < 200 && h != null && h > params.maxHours) return false;
   if (prefs.hltbBucket != null && HLTB_BUCKETS_QUERY[prefs.hltbBucket]) {
     if (h == null) return false;

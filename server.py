@@ -627,6 +627,7 @@ _EMPTY_CACHE_META_JSON: dict[str, dict[str, Any]] = {
     "steam_review_map.json": {"fetched_at": None},
     "cross_store_images_meta.json": {"fetched_at": None, "no_steam_match": []},
     "steam_tags_meta.json": {"fetched_at": None},
+    "genres_map.json": {"fetched_at": None, "by_key": {}},
     "protondb_map.json": {"fetched_at": None},
     "fx_rates.json": {"fetched_at": None, "rates": {}},
 }

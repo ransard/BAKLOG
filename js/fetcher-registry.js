@@ -38,7 +38,7 @@ export const WISHLIST_FETCHER_META_KEY = {
   "wishlistHumble": "wishlistHumble"
 };
 
-export const ENRICH_FETCHER_KEYS = new Set(["hltb", "protondb", "steamCovers", "steamReviews", "steamTags"]);
+export const ENRICH_FETCHER_KEYS = new Set(["genres", "hltb", "protondb", "steamCovers", "steamReviews", "steamTags"]);
 
 export const ENRICH_RELOAD_WISHLIST_KEYS = new Set(["hltb", "steamCovers"]);
 

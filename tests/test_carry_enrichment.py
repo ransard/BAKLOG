@@ -29,3 +29,8 @@ def test_does_not_clobber_winner_values() -> None:
 def test_no_loser_returns_winner() -> None:
     winner = {"name": "X"}
     assert carry_enrichment(winner, None) is winner
+
+
+def test_preserves_enriched_genres_when_replacing_a_source_row() -> None:
+    assert carry_enrichment({"genres": []}, {"genres": ["RPG"]})["genres"] == ["RPG"]
+    assert carry_enrichment({"genres": ["Puzzle"]}, {"genres": ["RPG"]})["genres"] == ["Puzzle"]

@@ -35,6 +35,7 @@ Tabbed picks on the dashboard and library views:
 
 - Multi-select genre filters with AND/OR mode
 - Store filter chips and store badges on multi-store rows
+- **HLTB length:** set minimum and maximum main-story hours under Filters → Refine. Both limits include their boundary value; 200+ removes the upper limit. Games without a known time are excluded while a length limit is active. Clear either limit using its active filter pill, or reset both with Clear all.
 - Smart sorting with optional **Priority Score** column
 - **Wishlist deal radar:** filter by On Sale / Historical Low / Min Discount % / Max Price; hide already-owned cross-store
 - Pick-for-me randomizer and one-click JSON reload

@@ -37,6 +37,7 @@ const STALE_SWEEP_ORDER = {
   ea: 120,
   hltb: 200,
   steamReviews: 210,
+  genres: 215,
   steamCovers: 220,
   steamTags: 230,
   protondb: 240,

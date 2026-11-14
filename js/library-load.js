@@ -33,7 +33,6 @@ import {
   applyHiddenTitleNorms,
   filterCounted,
   libraryGamesBase,
-  wishlistGamesBase,
   seedNoiseAutoHidden,
 } from "./personal-storage.js";
 import { savePrefs } from "./prefs.js";
@@ -227,6 +226,10 @@ export async function loadSteamCoversMeta() {
 
 export async function loadSteamTagsMeta() {
   await loadCacheMeta("cache/steam_tags_meta.json", "steamTags");
+}
+
+export async function loadGenresCache() {
+  await loadCacheMeta("cache/genres_map.json", "genres");
 }
 
 export async function loadProtondbCache() {
@@ -436,8 +439,9 @@ function countLibraryVisible() {
   return filterCounted(libraryGamesBase()).length;
 }
 function countWishlistVisible() {
-  // Match table / wishlistGamesBase: drop cross-store dupes and user-hidden.
-  return wishlistGamesBase().length;
+  return state.wishlistGames.filter(
+    (g) => !state.wishlistCrossStoreHiddenKeys.has(gameKey(g)),
+  ).length;
 }
 
 /** When reloadGames fails (no JSON files), still mark data ready and paint empty UI. */
@@ -762,6 +766,7 @@ export async function reloadAfterFetcher(key) {
     if (key === "steamReviews") await loadSteamReviewCache();
     if (key === "steamCovers") await loadSteamCoversMeta();
     if (key === "steamTags") await loadSteamTagsMeta();
+    if (key === "genres") await loadGenresCache();
     if (key === "protondb") await loadProtondbCache();
   } else if (key === "claims") {
     const wasAuto = consumeClaimsAutoRunFlag();
@@ -909,6 +914,7 @@ export async function reloadGames() {
     loadSteamReviewCache(),
     loadSteamCoversMeta(),
     loadSteamTagsMeta(),
+    loadGenresCache(),
     loadProtondbCache(),
   ]);
   await applyMergedLibrary();

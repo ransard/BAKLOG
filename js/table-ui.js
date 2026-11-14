@@ -36,7 +36,7 @@ import {
   formatReleaseDate,
   itchIsGame,
   findGameByKey,
-  getSameTitleKeysInRealm,
+  getSameTitleKeys,
   renderBulkStatusButtons,
   recomputeCrossStoreHidden,
   combinedPlaytime,
@@ -65,8 +65,6 @@ import {
   countedLibraryDenominator,
   addNintendoDroppedId,
   NINTENDO_DROPPED_KEY,
-  HIDDEN_TITLE_NORMS_LIBRARY_KEY,
-  HIDDEN_TITLE_NORMS_WISHLIST_KEY,
 } from './personal-storage.js';
 import { refreshAfterManualChange } from './library-load.js';
 import { getCoopFilterMode } from './prefs.js';
@@ -411,17 +409,16 @@ export function bulkSetStatus(status) {
 }
 
 function snapshotRemoveState(keys) {
-  // Hiding a pulled row mirrors the hidden flag across same-realm title keys and
-  // adds its title norm to the library or wishlist norms list. Capture both so
-  // undo fully reverses the hide — otherwise applyHiddenTitleNorms re-hides the
-  // row on the next merge and the "Removed N games" undo silently leaves it hidden.
+  // Hiding a pulled row mirrors the hidden flag across same-title keys and adds
+  // its title norm to __hidden_title_norms_v1. Capture both so undo fully
+  // reverses the hide — otherwise applyHiddenTitleNorms re-hides the row on the
+  // next merge and the "Removed N games" undo silently leaves it hidden.
   const expanded = new Set(keys);
   for (const key of keys) {
     const g = findGameByKey(key);
-    if (g) for (const k of getSameTitleKeysInRealm(g)) expanded.add(k);
+    if (g) for (const k of getSameTitleKeys(g)) expanded.add(k);
   }
-  expanded.add(HIDDEN_TITLE_NORMS_LIBRARY_KEY);
-  expanded.add(HIDDEN_TITLE_NORMS_WISHLIST_KEY);
+  expanded.add('__hidden_title_norms_v1');
   expanded.add(NINTENDO_DROPPED_KEY);
   const personalSnap = snapshotPersonalForKeys(expanded);
   const manualSnap = [];
@@ -1128,13 +1125,14 @@ export function tableFingerprint() {
   return JSON.stringify({
     v: state.activeView,
     sk: state.sortKey, sd: state.sortDir,
-    // The 6 live-filter controls live in state.sessionPrefs (single source of
+    // The live-filter controls live in state.sessionPrefs (single source of
     // truth — DOM mirrors state). Reading them here means the fingerprint
     // changes whenever the user (or a drill-in) touches search, status,
     // unplayed/early-access, or the rating/hours sliders.
     q: String(sp.search || "").trim().toLowerCase(),
     sf: sp.statusFilter || "",
     minR: +(sp.minRating || 0),
+    minH: +(sp.minHours || 0),
     maxH: sp.maxHours == null ? 200 : +sp.maxHours,
     unp: !!sp.unplayedOnly,
     ea: !!sp.earlyAccessOnly,

@@ -3722,10 +3722,7 @@ body.bulk-bar-open {
   }
   .dash-spotlight,
   .dash-spotlight-art,
-  .dash-spotlight-art-bg,
-  .dash-spotlight-body,
-  .dash-spotlight.has-logo-art .dash-spotlight-logo-lockup,
-  .dash-spotlight.has-logo-art .dash-spotlight-logo-backdrop {
+  .dash-spotlight-art-bg {
     transition: none !important;
     animation: none !important;
   }
@@ -7023,7 +7020,6 @@ html[data-theme="ember"] .brand-logo-pills {
   pointer-events: auto;
 }
 .dash-spotlight {
-  --spotlight-fade: 450ms;
   position: absolute;
   inset: 0;
   width: 100%;
@@ -7033,7 +7029,7 @@ html[data-theme="ember"] .brand-logo-pills {
   cursor: pointer;
   overflow: hidden;
   z-index: 0;
-  transition: opacity var(--spotlight-fade) ease;
+  transition: opacity 0.3s ease;
   pointer-events: auto;
   /* Keep the spotlight on its own compositor layer so nearby chart paint cycles
      (Chart.js canvas animation in .dash-ribbon) cannot trigger flicker on the
@@ -7044,27 +7040,8 @@ html[data-theme="ember"] .brand-logo-pills {
 /* Fade only the cover art + caption on slide change; the nav arrows stay put. */
 .dash-spotlight.is-fading .dash-spotlight-art,
 .dash-spotlight.is-fading .dash-spotlight-art-bg,
-.dash-spotlight.is-fading .dash-spotlight-body,
-.dash-spotlight.is-incoming .dash-spotlight-art,
-.dash-spotlight.is-incoming .dash-spotlight-art-bg,
-.dash-spotlight.is-incoming .dash-spotlight-body {
+.dash-spotlight.is-fading .dash-spotlight-body {
   opacity: 0;
-}
-/* Hold hero zoom / portrait float / logo zoom until fade-in completes so a
-   cross-kind swap does not restart motion under opacity 0. */
-.dash-spotlight.is-fading:not(.has-portrait-art):not(.is-lowres-art)
-  .dash-spotlight-art.is-loaded,
-.dash-spotlight.is-incoming:not(.has-portrait-art):not(.is-lowres-art)
-  .dash-spotlight-art.is-loaded,
-.dash-spotlight.is-fading.has-portrait-art .dash-spotlight-art.is-loaded,
-.dash-spotlight.is-incoming.has-portrait-art .dash-spotlight-art.is-loaded,
-.dash-spotlight.is-fading.has-portrait-art .dash-spotlight-art-bg.is-loaded,
-.dash-spotlight.is-incoming.has-portrait-art .dash-spotlight-art-bg.is-loaded,
-.dash-spotlight.is-fading.has-portrait-art .dash-spotlight-sheen::before,
-.dash-spotlight.is-incoming.has-portrait-art .dash-spotlight-sheen::before,
-.dash-spotlight.is-fading.has-logo-art .dash-spotlight-logo-mark svg,
-.dash-spotlight.is-incoming.has-logo-art .dash-spotlight-logo-mark svg {
-  animation: none !important;
 }
 .dash-spotlight-art-bg {
   position: absolute;
@@ -7099,7 +7076,7 @@ html[data-theme="ember"] .brand-logo-pills {
 }
 .dash-spotlight.has-portrait-art .dash-spotlight-art-bg {
   display: block;
-  transition: opacity var(--spotlight-fade) ease;
+  transition: opacity 0.45s ease;
 }
 .dash-spotlight-art-bg.is-loaded {
   opacity: 1;
@@ -7122,7 +7099,7 @@ html[data-theme="dark"]
   filter: brightness(1.1);
   transition:
     transform 0.6s ease,
-    opacity var(--spotlight-fade) ease;
+    opacity 0.45s ease;
   -webkit-mask-image: linear-gradient(
     90deg,
     transparent 0%,
@@ -7172,7 +7149,7 @@ html[data-theme="dark"]
 }
 .dash-spotlight.is-lowres-art .dash-spotlight-art-bg {
   display: block;
-  transition: opacity var(--spotlight-fade) ease;
+  transition: opacity 0.45s ease;
 }
 .dash-spotlight.is-lowres-art .dash-spotlight-art {
   object-fit: contain;
@@ -7281,7 +7258,7 @@ html[data-theme="dark"]
     0 8px 26px
       color-mix(in srgb, var(--spot-glow, var(--accent)) 55%, transparent)
   );
-  animation: spotlightHeroZoom 14s var(--spotlight-fade) ease-out forwards;
+  animation: spotlightHeroZoom 14s ease-out forwards;
 }
 .dash-spotlight-wordmark {
   font-weight: 800;
@@ -7317,15 +7294,10 @@ html[data-theme="dark"]
   padding: 3px 10px;
   box-shadow: 0 2px 10px color-mix(in srgb, var(--accent) 40%, transparent);
 }
-.dash-spotlight.has-logo-art .dash-spotlight-logo-lockup,
-.dash-spotlight.has-logo-art .dash-spotlight-logo-backdrop {
-  transition: opacity var(--spotlight-fade) ease;
-}
 .dash-spotlight.is-fading.has-logo-art .dash-spotlight-logo-lockup,
-.dash-spotlight.is-fading.has-logo-art .dash-spotlight-logo-backdrop,
-.dash-spotlight.is-incoming.has-logo-art .dash-spotlight-logo-lockup,
-.dash-spotlight.is-incoming.has-logo-art .dash-spotlight-logo-backdrop {
+.dash-spotlight.is-fading.has-logo-art .dash-spotlight-logo-backdrop {
   opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
 /* Premium spotlight palettes (theme-independent). Sync pair:
@@ -7359,7 +7331,7 @@ html[data-theme="dark"]
 }
 .dash-spotlight:not(.has-portrait-art):not(.is-lowres-art)
   .dash-spotlight-art.is-loaded {
-  animation: spotlightHeroZoom 12s var(--spotlight-fade) ease-out forwards;
+  animation: spotlightHeroZoom 12s ease-out forwards;
 }
 .dash-spotlight:not(.has-portrait-art):not(.is-lowres-art):hover
   .dash-spotlight-art.is-loaded {
@@ -7389,7 +7361,7 @@ html[data-theme="dark"]
 }
 .dash-spotlight.has-portrait-art .dash-spotlight-art {
   transition:
-    opacity var(--spotlight-fade) ease,
+    opacity 0.45s ease,
     transform 0.35s ease,
     filter 0.35s ease;
   box-sizing: border-box;
@@ -7706,7 +7678,7 @@ html[data-theme="dark"]
   border-radius: 8px;
   padding: 8px 12px;
   backdrop-filter: blur(2px);
-  transition: opacity var(--spotlight-fade) ease;
+  transition: opacity 0.3s ease;
 }
 /* Logo slides: compact pitch card bottom-right (beats base .dash-spotlight-body). */
 .dash-spotlight.has-logo-art .dash-spotlight-body {

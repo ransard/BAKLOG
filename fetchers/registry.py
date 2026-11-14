@@ -73,7 +73,7 @@ WISHLIST_META_KEY_BY_FETCHER: dict[str, str] = {
     "wishlistHumble": "wishlistHumble",
 }
 
-ENRICH_FETCHER_KEYS = frozenset({"hltb", "steamReviews", "steamCovers", "steamTags", "protondb"})
+ENRICH_FETCHER_KEYS = frozenset({"hltb", "steamReviews", "steamCovers", "steamTags", "genres", "protondb"})
 
 # Enrich scripts that mutate wishlist JSON on disk — others only touch library
 # catalogs (see enrich_*.py STORE_FILES). reloadAfterFetcher uses this to skip

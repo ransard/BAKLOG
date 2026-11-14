@@ -398,6 +398,7 @@ _IMAGE_KEYS = frozenset({"header_image", "library_image"})
 
 # Fields written by enrich scripts (reviews, HLTB, co-op tags), not store fetchers.
 ENRICHMENT_FIELDS = (
+    "genres",
     "steam_review_percent",
     "steam_review_count",
     "steam_review_desc",
@@ -444,7 +445,7 @@ def carry_enrichment(winner: dict, loser: dict | None) -> dict:
     for key in ENRICHMENT_FIELDS:
         win_val = out.get(key)
         lose_val = loser.get(key)
-        if (win_val is None or win_val == "" or win_val is False) and lose_val not in (
+        if (win_val is None or win_val == "" or win_val is False or win_val == []) and lose_val not in (
             None,
             "",
             False,

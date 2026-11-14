@@ -6,6 +6,7 @@ describe('maybeAutoEnrichNewAdditions', () => {
   let maybeAutoEnrichNewAdditions;
 
   const enrichSources = [
+    { key: 'genres', label: 'Genres', group: 'enrich', missingRequirements: [] },
     { key: 'steamTags', label: 'Co-op tags', group: 'enrich', missingRequirements: [] },
     { key: 'steamCovers', label: 'Covers', group: 'enrich', missingRequirements: [] },
     { key: 'steamReviews', label: 'Reviews', group: 'enrich', missingRequirements: ['STEAM_API_KEY'] },
@@ -75,12 +76,13 @@ describe('maybeAutoEnrichNewAdditions', () => {
     expect(ok).toBe(true);
     expect(runFn.mock.calls.map(c => c[0])).toEqual([
       'steamReviews',
+      'genres',
       'steamTags',
       'steamCovers',
       'hltb',
     ]);
     expect(runFn.mock.calls.every(c => c[1]?.auto === true)).toBe(true);
-    expect(waitForQueueSlot).toHaveBeenCalledTimes(4);
+    expect(waitForQueueSlot).toHaveBeenCalledTimes(5);
   });
 
   it('skips enrichers missing credentials', async () => {
@@ -97,7 +99,7 @@ describe('maybeAutoEnrichNewAdditions', () => {
       authCooldownRemainingMs: () => 0,
       isFetcherDisconnected: () => false,
     });
-    expect(runFn.mock.calls.map(c => c[0])).toEqual(['steamTags', 'steamCovers', 'hltb']);
+    expect(runFn.mock.calls.map(c => c[0])).toEqual(['genres', 'steamTags', 'steamCovers', 'hltb']);
   });
 
   it('skips enrichers already running', async () => {
@@ -114,7 +116,7 @@ describe('maybeAutoEnrichNewAdditions', () => {
       authCooldownRemainingMs: () => 0,
       isFetcherDisconnected: () => false,
     });
-    expect(runFn.mock.calls.map(c => c[0])).toEqual(['steamReviews', 'steamTags', 'steamCovers']);
+    expect(runFn.mock.calls.map(c => c[0])).toEqual(['steamReviews', 'genres', 'steamTags', 'steamCovers']);
   });
 
   it('stops queuing remaining enrichers after cancel epoch bumps mid-batch', async () => {
@@ -138,7 +140,7 @@ describe('maybeAutoEnrichNewAdditions', () => {
       isFetcherDisconnected: () => false,
       appendLine,
     });
-    expect(runFn.mock.calls.map(c => c[0])).toEqual(['steamReviews', 'steamTags', 'steamCovers']);
+    expect(runFn.mock.calls.map(c => c[0])).toEqual(['steamReviews', 'genres', 'steamTags', 'steamCovers']);
     expect(appendLine).toHaveBeenCalledWith('[auto-enrich aborted: cancelled]', 'meta');
   });
 

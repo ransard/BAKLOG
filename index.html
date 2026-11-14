@@ -11,7 +11,7 @@
     <!-- Must match pyproject.toml + package.json (see CHANGELOG release discipline). Read at runtime by js/error-boundary.js for bug-bundle metadata. -->
     <!-- Optional override for bug report endpoint during local testing: content="http://127.0.0.1:3000/api/report" -->
     <!-- <meta name="baklog-report-endpoint" content="https://baklog.app/api/report" /> -->
-    <meta name="baklog-version" content="0.9.1" />
+    <meta name="baklog-version" content="0.9.08" />
     <meta name="theme-color" content="#0f172a" />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <script>
@@ -2568,17 +2568,34 @@
             />
           </label>
           <label class="block text-xs text-slate-300"
-            >Max length (h)
+            >Min HLTB main (h)
+            <span id="minHoursVal" class="text-slate-100">0</span>
+            <input
+              id="minHours"
+              type="range"
+              min="0"
+              max="200"
+              step="0.5"
+              value="0"
+              aria-describedby="hltbRangeHelp"
+              class="w-full mt-1"
+            />
+          </label>
+          <label class="block text-xs text-slate-300"
+            >Max HLTB main (h)
             <span id="maxHoursVal" class="text-slate-100">200+</span>
             <input
               id="maxHours"
               type="range"
               min="0"
               max="200"
+              step="0.5"
               value="200"
+              aria-describedby="hltbRangeHelp"
               class="w-full mt-1"
             />
           </label>
+          <p id="hltbRangeHelp" class="text-xs text-slate-400">200+ means no upper limit. Games without HLTB hours are excluded when a length limit is set.</p>
         </div>
         <div id="coopSection" class="drawer-section">
           <div class="drawer-section-head">

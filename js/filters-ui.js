@@ -222,6 +222,7 @@ export function removeActiveFilter(kind, value) {
     case "earlyAccess":     return applyPrefsChange({ sessionPrefs: { earlyAccessOnly: false } });
     case "stale":           return applyPrefsChange({ sessionPrefs: { staleOnly: false } });
     case "minRating":       return applyPrefsChange({ sessionPrefs: { minRating: 0 } });
+    case "minHours":        return applyPrefsChange({ sessionPrefs: { minHours: 0 } });
     case "maxHours":        return applyPrefsChange({ sessionPrefs: { maxHours: 200 } });
     case "store":           return applyPrefsChange({ prefs: { storeFilter: "" } },           { renderers: [renderStoreChips] });
     case "releaseYear":     return applyPrefsChange({ prefs: { releaseYearFilter: "" } });
@@ -314,6 +315,7 @@ export function clearAllFilters() {
         earlyAccessOnly: false,
         staleOnly: false,
         minRating: 0,
+        minHours: 0,
         maxHours: 200,
         crossStoreDedup: false,
         itchHideNonGames: false,

@@ -37,19 +37,10 @@ version is `pyproject.toml` (mirrored into `package.json` and the
 
 ## [Unreleased]
 
-## [0.9.1] - 2026-11-13
+### Added
 
-### Fixed
-
-- Spotlight keeps autoplaying by default (Pause is user-only), and fades between cover, logo, sale, and portrait slides wait for art fit so the swap does not flash mid-motion.
-
-## [0.9.09] - 2026-11-13
-
-### Fixed
-
-- Hiding a wishlist title (or adding a wishlist note) no longer hides or edits the same title in your owned library, and the reverse.
-- Spotlight slides fade between cards more smoothly, including when the system prefers reduced motion.
-- After you sign in, Pro background store refresh uses your account library instead of a leftover empty Default profile.
+- Filter games by minimum and maximum HLTB main-story hours from the filter drawer.
+- Genres enrichment fills missing library genres across stores while keeping existing genres. Click Genres in Fetcher health, or Shift+click to retry unmatched games.
 
 ## [0.9.08] - 2026-11-08
 

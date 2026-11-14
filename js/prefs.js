@@ -173,6 +173,7 @@ export function loadSessionPrefs() {
     unplayedOnly: false,
     earlyAccessOnly: false,
     minRating: 0,
+    minHours: 0,
     maxHours: 200,
   };
 }
@@ -185,7 +186,7 @@ export function loadSessionPrefs() {
  * because the DOM already reflects the user's input — they just push the
  * value into state.sessionPrefs.
  *
- * Knows about the min-rating and max-hours display labels too so we can stop
+ * Knows about the min-rating and min/max-hours display labels too so we can stop
  * sprinkling that bookkeeping across every drill-in / pill-remove path.
  */
 export function syncFilterDomFromState() {
@@ -206,6 +207,10 @@ export function syncFilterDomFromState() {
   setVal("minRating", minR);
   const minRVal = document.getElementById("minRatingVal");
   if (minRVal) minRVal.textContent = String(minR);
+  const minH = s.minHours || 0;
+  setVal("minHours", minH);
+  const minHVal = document.getElementById("minHoursVal");
+  if (minHVal) minHVal.textContent = String(minH);
   const maxH = s.maxHours == null ? 200 : s.maxHours;
   setVal("maxHours", maxH);
   const maxHVal = document.getElementById("maxHoursVal");

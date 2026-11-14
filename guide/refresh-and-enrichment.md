@@ -8,7 +8,7 @@ Keep library data current and backfill metadata after fetchers run.
 
 **ITAD auto-refresh** (default on): deal prices refresh on a 15-60 min schedule from the Fetcher health panel.
 
-**Auto-enrich** (default off): after a library fetch adds games, optionally queues HLTB, reviews, covers, and co-op tags. Turn it on from the Fetcher health panel if you want that.
+**Auto-enrich** (default off): after a library fetch adds games, optionally queues genres, HLTB, reviews, covers, co-op tags, and ProtonDB. Turn it on from the Fetcher health panel if you want that.
 
 On the free tier, store refresh is one store at a time, on demand (click a fetcher chip). Pro adds scheduled refresh while the app is closed - see [FAQ](faq.md).
 
@@ -18,6 +18,9 @@ Click any chip in **Fetcher health** to enqueue that fetcher. Output streams liv
 
 - Shift+click on supported library/wishlist chips adds `--refresh`
 - Shift+click on HLTB, Reviews, Covers enrichers adds `--retry-misses`
+- Shift+click on Genres retries unmatched titles and refreshes metadata for games still missing genres.
+
+**Missing genres:** click **Genres** under Enrichment in Fetcher health. It fills missing genres across library stores using public Steam metadata, with no Steam connection required. Existing genres stay as they are. Games without a Steam match or genre data remain unchanged; Shift+click retries them later. Lookups and results are cached in the active profile. This is an on-demand online lookup: titles without a known Steam ID are sent to Steam's public store search.
 
 **HLTB backlog:** if many titles still need hours (or you Shift+click to retry cached misses), BAKLOG shows a confirm dialog with a rough ETA before starting. Matched hours are saved as the run progresses. If HowLongToBeat's search API is down, the enricher stops after a streak of empty results so it does not mark your whole library as "no match" - bump `howlongtobeatpy` if needed, then Shift+click HLTB to retry.
 
@@ -65,6 +68,7 @@ crontab -e
 
 | Script | Purpose |
 |--------|---------|
+| `enrich_genres.py` | Fill missing library genres across stores from Steam metadata; no API key |
 | `enrich_steam_reviews.py` | Backfill Steam review % on non-Steam rows via Steam store search |
 | `enrich_cross_store_images.py` | Backfill `header_image` / `library_image` from the Steam CDN for non-Steam rows |
 | `enrich_hltb.py` | Backfill HLTB hours on any `games_*.json` row missing them |
@@ -72,7 +76,7 @@ crontab -e
 | `fetch_itad.py` | Cross-store deal prices → `itad_prices.json`; refreshes FX rates |
 | `fetch_fx.py` | Refresh FX rates only (`cache/fx_rates.json`, Frankfurter; 24h cache) |
 
-Wrapper: `python -m enrichers <cmd>` for `hltb`, `steam-reviews`, `cross-store-images`.
+Wrapper: `python -m enrichers <cmd>` for `genres`, `hltb`, `steam-reviews`, `cross-store-images`. For example, `python -m enrichers genres --stores steam gog` limits genre enrichment to those stores; `--dry-run` reports changes without writing catalogs or the genre cache.
 
 **Data attribution:** BAKLOG surfaces third-party data from [ProtonDB](https://www.protondb.com) (Steam Deck / Linux tiers, ODbL), [IsThereAnyDeal](https://isthereanydeal.com/) (deal prices), [GamerPower](https://www.gamerpower.com/) (giveaway feed), and [HowLongToBeat](https://howlongtobeat.com/) (completion hours). Store logos and trademarks belong to their respective owners.
 

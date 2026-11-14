@@ -88,6 +88,7 @@ export const state = {
     earlyAccessOnly: false,
     staleOnly: false,
     minRating: 0,
+    minHours: 0,
     maxHours: 200,
   },
 };

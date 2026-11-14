@@ -195,7 +195,7 @@ export function renderDashboardFetcherHealth() {
           `Command: ${src.cmd}${refreshHint
             ? (src.key === 'hltb' || src.key === 'steamReviews' || src.key === 'steamCovers'
               ? ' [+ --retry-misses on Shift+click]'
-              : src.key === 'protondb'
+              : src.key === 'protondb' || src.key === 'genres'
                 ? ' [+ --retry-misses --refresh on Shift+click]'
                 : ' [+ --refresh on Shift+click]')
             : ''}`,

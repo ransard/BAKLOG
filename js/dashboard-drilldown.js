@@ -23,6 +23,7 @@ function dashResetLibraryFiltersExceptDedup() {
   sp.unplayedOnly = false;
   sp.earlyAccessOnly = false;
   sp.minRating = 0;
+  sp.minHours = 0;
   sp.maxHours = 200;
   setCoopFilterMode('off');
   state.prefs.storeFilter = "";

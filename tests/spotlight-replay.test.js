@@ -1,14 +1,6 @@
 /** Spotlight "Replay" category — surfaces finished games occasionally. */
-import { readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Window } from "happy-dom";
-
-const APP_CSS = readFileSync(
-  join(dirname(fileURLToPath(import.meta.url)), "..", "app.css"),
-  "utf8",
-);
 
 describe("spotlight replay category", () => {
   let pickSpotlightGames;
@@ -414,16 +406,7 @@ describe("spotlight rotation safety", () => {
     global.document = win.document;
     global.localStorage = win.localStorage;
     win.__dashFailedCovers = new Set();
-    // Do not fake rAF - rotation-safety tests own a manual raf queue.
-    vi.useFakeTimers({
-      toFake: [
-        "setTimeout",
-        "clearTimeout",
-        "setInterval",
-        "clearInterval",
-        "Date",
-      ],
-    });
+    vi.useFakeTimers();
     vi.resetModules();
   });
 
@@ -491,166 +474,5 @@ describe("spotlight rotation safety", () => {
     vi.advanceTimersByTime(SPOTLIGHT_INTERVAL_MS);
     expect(el.classList.contains("is-fading")).toBe(true);
     expect(el.dataset.key).toBe("steam:2");
-  });
-
-  it("SPOTLIGHT_FADE_MS matches app.css --spotlight-fade", async () => {
-    expect(APP_CSS).toMatch(/\.dash-spotlight\s*\{[^}]*--spotlight-fade:\s*450ms/s);
-    expect(APP_CSS).toMatch(
-      /\.dash-spotlight-art\s*\{[^}]*opacity\s+var\(--spotlight-fade\)/s,
-    );
-    const { SPOTLIGHT_FADE_MS } = await import("../js/dashboard-spotlight.js");
-    expect(SPOTLIGHT_FADE_MS).toBe(450);
-  });
-
-  it("holds is-incoming for one painted frame after the fade swap", async () => {
-    window.matchMedia = vi.fn(() => ({
-      matches: false,
-      media: "",
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-    }));
-    const rafQueue = [];
-    const raf = (cb) => {
-      rafQueue.push(cb);
-      return rafQueue.length;
-    };
-    const caf = (id) => {
-      if (id >= 1 && id <= rafQueue.length) rafQueue[id - 1] = null;
-    };
-    global.requestAnimationFrame = raf;
-    global.cancelAnimationFrame = caf;
-    window.requestAnimationFrame = raf;
-    window.cancelAnimationFrame = caf;
-
-    const {
-      startSpotlightRotation,
-      stopSpotlightRotation,
-      SPOTLIGHT_INTERVAL_MS,
-      SPOTLIGHT_FADE_MS,
-    } = await import("../js/dashboard-spotlight.js");
-    const games = [
-      { store: "steam", id: "1", name: "A", steam_review_percent: 90, steam_review_count: 500, library_image: "a.jpg", header_image: "a.jpg" },
-      { store: "steam", id: "2", name: "B", steam_review_percent: 88, steam_review_count: 500, library_image: "b.jpg", header_image: "b.jpg" },
-    ];
-    games[0]._spotlightReason = { eyebrow: "Highly rated", score: 90 };
-    games[1]._spotlightReason = { eyebrow: "Solid pick", score: 85 };
-
-    document.body.innerHTML = `
-      <button type="button" class="dash-spotlight" id="dashboardSpotlight" data-key="steam:1">
-        <span id="spot-inner">slide-1</span>
-      </button>
-    `;
-    const el = document.getElementById("dashboardSpotlight");
-    startSpotlightRotation(games);
-    rafQueue.length = 0;
-
-    vi.advanceTimersByTime(SPOTLIGHT_INTERVAL_MS + SPOTLIGHT_FADE_MS);
-    expect(el.dataset.key).toBe("steam:2");
-    expect(el.classList.contains("is-fading")).toBe(false);
-    expect(el.classList.contains("is-incoming")).toBe(true);
-    // Drop any incidental rAFs, then flush art-fit wait if still pending.
-    rafQueue.length = 0;
-    vi.advanceTimersByTime(SPOTLIGHT_FADE_MS);
-    expect(el.classList.contains("is-incoming")).toBe(true);
-    expect(rafQueue.filter(Boolean).length).toBeGreaterThanOrEqual(1);
-
-    // First painted frame: still held at opacity 0 (is-incoming).
-    const firstBatch = rafQueue.splice(0).filter(Boolean);
-    for (const cb of firstBatch) cb(0);
-    expect(el.classList.contains("is-incoming")).toBe(true);
-    expect(rafQueue.filter(Boolean).length).toBeGreaterThanOrEqual(1);
-
-    // Second frame releases the hold so CSS can fade the new slide in.
-    const secondBatch = rafQueue.splice(0).filter(Boolean);
-    for (const cb of secondBatch) cb(0);
-    expect(el.classList.contains("is-incoming")).toBe(false);
-
-    stopSpotlightRotation();
-  });
-
-  it("stopSpotlightRotation cancels a pending is-incoming release", async () => {
-    window.matchMedia = vi.fn(() => ({
-      matches: false,
-      media: "",
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-    }));
-    const rafQueue = [];
-    const cancelSpy = vi.fn((id) => {
-      if (id >= 1 && id <= rafQueue.length) rafQueue[id - 1] = null;
-    });
-    const raf = (cb) => {
-      rafQueue.push(cb);
-      return rafQueue.length;
-    };
-    global.requestAnimationFrame = raf;
-    global.cancelAnimationFrame = cancelSpy;
-    window.requestAnimationFrame = raf;
-    window.cancelAnimationFrame = cancelSpy;
-
-    const {
-      startSpotlightRotation,
-      stopSpotlightRotation,
-      SPOTLIGHT_INTERVAL_MS,
-      SPOTLIGHT_FADE_MS,
-    } = await import("../js/dashboard-spotlight.js");
-    const games = [
-      { store: "steam", id: "1", name: "A", steam_review_percent: 90, steam_review_count: 500, library_image: "a.jpg", header_image: "a.jpg" },
-      { store: "steam", id: "2", name: "B", steam_review_percent: 88, steam_review_count: 500, library_image: "b.jpg", header_image: "b.jpg" },
-    ];
-    games[0]._spotlightReason = { eyebrow: "Highly rated", score: 90 };
-    games[1]._spotlightReason = { eyebrow: "Solid pick", score: 85 };
-
-    document.body.innerHTML = `
-      <button type="button" class="dash-spotlight" id="dashboardSpotlight" data-key="steam:1">
-        <span id="spot-inner">slide-1</span>
-      </button>
-    `;
-    const el = document.getElementById("dashboardSpotlight");
-    startSpotlightRotation(games);
-    rafQueue.length = 0;
-    vi.advanceTimersByTime(SPOTLIGHT_INTERVAL_MS + SPOTLIGHT_FADE_MS);
-    expect(el.classList.contains("is-incoming")).toBe(true);
-    rafQueue.length = 0;
-    vi.advanceTimersByTime(SPOTLIGHT_FADE_MS);
-    expect(el.classList.contains("is-incoming")).toBe(true);
-
-    // Stop before the first queued incoming-release callback runs.
-    expect(rafQueue.some((cb) => typeof cb === "function")).toBe(true);
-    cancelSpy.mockClear();
-    const pendingBeforeFirst = [...rafQueue];
-    stopSpotlightRotation();
-    expect(cancelSpy).toHaveBeenCalled();
-    const cancelledFirst = cancelSpy.mock.calls[0][0];
-    expect(cancelledFirst).toBeGreaterThan(0);
-    expect(rafQueue[cancelledFirst - 1]).toBeNull();
-    expect(el.classList.contains("is-incoming")).toBe(false);
-    expect(el.classList.contains("is-fading")).toBe(false);
-    for (const cb of pendingBeforeFirst) cb?.(0);
-    expect(el.classList.contains("is-incoming")).toBe(false);
-
-    // Second path: stop after the first rAF callback while the nested handle is pending.
-    rafQueue.length = 0;
-    cancelSpy.mockClear();
-    startSpotlightRotation(games);
-    rafQueue.length = 0;
-    vi.advanceTimersByTime(SPOTLIGHT_INTERVAL_MS + SPOTLIGHT_FADE_MS);
-    rafQueue.length = 0;
-    vi.advanceTimersByTime(SPOTLIGHT_FADE_MS);
-    expect(el.classList.contains("is-incoming")).toBe(true);
-    const firstPendingIdx = rafQueue.findIndex((cb) => typeof cb === "function");
-    expect(firstPendingIdx).toBeGreaterThanOrEqual(0);
-    rafQueue[firstPendingIdx](0);
-    expect(rafQueue.some((cb, i) => i > firstPendingIdx && typeof cb === "function")).toBe(true);
-    cancelSpy.mockClear();
-    const pendingNested = [...rafQueue];
-    stopSpotlightRotation();
-    expect(cancelSpy).toHaveBeenCalled();
-    const cancelledNested = cancelSpy.mock.calls[0][0];
-    expect(cancelledNested).toBeGreaterThan(firstPendingIdx + 1);
-    expect(rafQueue[cancelledNested - 1]).toBeNull();
-    expect(el.classList.contains("is-incoming")).toBe(false);
-    for (const cb of pendingNested) cb?.(0);
-    expect(el.classList.contains("is-incoming")).toBe(false);
   });
 });

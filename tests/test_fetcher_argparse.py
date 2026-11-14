@@ -71,8 +71,8 @@ def test_fetch_humble_accepts_skip_hltb_flag() -> None:
     assert "--skip-hltb" in (proc.stdout or "")
 
 
-def test_manifest_has_27_fetchers() -> None:
-    assert len(MANIFEST_ENTRIES) == 27
+def test_manifest_has_28_fetchers() -> None:
+    assert len(MANIFEST_ENTRIES) == 28
 
 
 @pytest.mark.parametrize("entry", MANIFEST_ENTRIES, ids=[e["key"] for e in MANIFEST_ENTRIES])

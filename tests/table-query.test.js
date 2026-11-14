@@ -43,6 +43,7 @@ function ctx(overrides = {}) {
       unplayed: false,
       earlyAccess: false,
       minRating: 0,
+      minHours: 0,
       maxHours: 200,
       ...(overrides.params || {}),
     },
@@ -173,14 +174,14 @@ describe('queryGames — integration', () => {
     expect(out[0].id).toBe(1);
   });
 
-  it('applies maxHours (HLTB) but never excludes hltb-unknown games', () => {
+  it('applies maxHours (HLTB) and excludes games with unknown hours', () => {
     const source = [
       { ...baseGame, id: 1, hltb_main_hours: 5 },
       { ...baseGame, id: 2, hltb_main_hours: 80 },
       { ...baseGame, id: 3, hltb_main_hours: null },
     ];
     const out = queryGames({ source, ctx: ctx({ params: { maxHours: 30 } }) });
-    expect(out.map(g => g.id).sort()).toEqual([1, 3]);
+    expect(out.map(g => g.id).sort()).toEqual([1]);
   });
 
   it('respects unplayed filter against playtime_minutes', () => {
@@ -191,6 +192,28 @@ describe('queryGames — integration', () => {
     const out = queryGames({ source, ctx: ctx({ params: { unplayed: true } }) });
     expect(out).toHaveLength(1);
     expect(out[0].id).toBe(1);
+  });
+
+  it('applies an inclusive HLTB range and uses personal main-hour overrides', () => {
+    const source = [0, 4, 5.5, 10, 11, null, undefined, NaN].map((hours, id) => ({
+      ...baseGame, id, hltb_main_hours: hours,
+    }));
+    const range = { minHours: 5.5, maxHours: 10 };
+    expect(queryGames({ source, ctx: ctx({ params: range }) }).map(g => g.id)).toEqual([2, 3]);
+    const personal = { 'steam:1': { hltb_override: 6 }, 'steam:3': { hltb_override: 20 } };
+    expect(queryGames({ source, ctx: ctx({ params: range, personal }) }).map(g => g.id)).toEqual([1, 2]);
+  });
+
+  it('supports minimum-only filtering past 200 hours and unlimited defaults', () => {
+    const source = [199, 200, 350, null].map((hours, id) => ({ ...baseGame, id, hltb_main_hours: hours }));
+    expect(queryGames({ source, ctx: ctx({ params: { minHours: 200 } }) }).map(g => g.id)).toEqual([1, 2]);
+    expect(queryGames({ source, ctx: ctx() })).toHaveLength(4);
+  });
+
+  it('supports a zero-hour maximum and an exact range', () => {
+    const source = [0, 0.5, 5, 6, null].map((hours, id) => ({ ...baseGame, id, hltb_main_hours: hours }));
+    expect(queryGames({ source, ctx: ctx({ params: { maxHours: 0 } }) }).map(g => g.id)).toEqual([0]);
+    expect(queryGames({ source, ctx: ctx({ params: { minHours: 5, maxHours: 5 } }) }).map(g => g.id)).toEqual([2]);
   });
 
   it('sorts ascending by name by default', () => {
@@ -271,7 +294,7 @@ describe('queryGames — integration', () => {
 });
 
 describe('collectTableParams', () => {
-  // Audit finding find_state_dom_split: the 6 live-filter controls now live
+  // Audit finding find_state_dom_split: live-filter controls now live
   // in state.sessionPrefs. collectTableParams reads them from there — never
   // from the DOM — so the worker path and the main-thread path stay in sync.
   it('returns sensible defaults for an empty sessionPrefs', () => {
@@ -282,6 +305,7 @@ describe('collectTableParams', () => {
       earlyAccess: false,
       staleOnly: false,
       minRating: 0,
+      minHours: 0,
       maxHours: 200,
     });
   });
@@ -294,6 +318,7 @@ describe('collectTableParams', () => {
       earlyAccess: false,
       staleOnly: false,
       minRating: 0,
+      minHours: 0,
       maxHours: 200,
     });
   });
@@ -307,6 +332,7 @@ describe('collectTableParams', () => {
         earlyAccessOnly: true,
         staleOnly: true,
         minRating: 70,
+        minHours: 5.5,
         maxHours: 12,
       }),
     ).toEqual({
@@ -316,18 +342,20 @@ describe('collectTableParams', () => {
       earlyAccess: true,
       staleOnly: true,
       minRating: 70,
+      minHours: 5.5,
       maxHours: 12,
     });
   });
 
   it('coerces stringy slider values and ignores junk minRating', () => {
-    expect(collectTableParams({ minRating: '40', maxHours: '5' })).toEqual({
+    expect(collectTableParams({ minRating: '40', minHours: '2.5', maxHours: '5' })).toEqual({
       q: '',
       status: '',
       unplayed: false,
       earlyAccess: false,
       staleOnly: false,
       minRating: 40,
+      minHours: 2.5,
       maxHours: 5,
     });
   });

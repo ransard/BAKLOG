@@ -47,6 +47,15 @@ beforeEach(() => {
 });
 
 describe('tableFingerprint', () => {
+  it('changes when either HLTB range bound changes', () => {
+    const base = tableFingerprint();
+    state.sessionPrefs.minHours = 5;
+    const min = tableFingerprint();
+    expect(min).not.toBe(base);
+    state.sessionPrefs.maxHours = 20;
+    expect(tableFingerprint()).not.toBe(min);
+  });
+
   it('is stable when tracked inputs are unchanged', () => {
     const a = tableFingerprint();
     const b = tableFingerprint();

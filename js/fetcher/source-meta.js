@@ -3,8 +3,10 @@ import { baklogFetch } from '../api-client.js';
 import { state, ITCH_NON_GAME_CLASSIFICATIONS } from '../state.js';
 import { formatNum } from '../dom-util.js';
 import { fetcherSources, setFetcherSources } from '../fetcher-health-shared.js';
+import { ENRICH_FETCHER_KEYS } from '../fetcher-registry.js';
+import { gameGenresCanonical } from '../genres.js';
 
-export const ENRICH_KEYS = new Set(['hltb', 'steamReviews', 'steamCovers', 'steamTags', 'protondb']);
+export const ENRICH_KEYS = ENRICH_FETCHER_KEYS;
 /** Cache JSON loaded after library files in reloadGames — avoid "missing" flash during boot. */
 export const BOOT_DEFERRED_FETCHER_KEYS = new Set([...ENRICH_KEYS, 'itad', 'claims']);
 export const MAX_SSE_HINT = 'max 8 live streams';
@@ -29,7 +31,7 @@ export const COUNT_PILL_TITLES = {
 // Fixed order within the Enrichment group: keep the three Steam-derived
 // enrichers (orange edge) adjacent, then HLTB. Overrides the status/label
 // sort so they always render next to each other.
-export const ENRICH_ORDER = ['steamReviews', 'steamTags', 'steamCovers', 'protondb', 'hltb'];
+export const ENRICH_ORDER = ['steamReviews', 'genres', 'steamTags', 'steamCovers', 'protondb', 'hltb'];
 
 export const COUNT_FNS = {
   itad: m => Object.keys(m?.by_key || {}).length,
@@ -38,6 +40,7 @@ export const COUNT_FNS = {
   steamReviews: m => Object.keys(m || {}).filter(k => k !== 'fetched_at').length,
   steamCovers: m => (m?.last_updated != null ? m.last_updated : null),
   steamTags: m => (m?.rows_updated != null ? m.rows_updated : null),
+  genres: m => m?.rows_updated ?? null,
   protondb: m => Object.keys(m || {}).filter(k => k !== 'fetched_at').length,
 };
 
@@ -70,6 +73,7 @@ const CLICK_HINTS = {
   steamReviews: 'Pull missing Steam review scores for non-Steam games',
   steamCovers: 'Generate covers for non-Steam games missing artwork',
   steamTags: 'Backfill co-op tags + missing genres on non-Steam games using Steam category data',
+  genres: 'Fill missing library genres from Steam metadata; existing genres are kept',
   protondb: 'Pull ProtonDB Linux / Steam Deck compatibility tiers for Steam-matched games',
 };
 
@@ -85,6 +89,7 @@ const REFRESH_HINTS = {
     'Also retry titles previously cached as "no Steam app match" - use after Steam lists the game',
   steamCovers: 'Also retry rows previously cached as "no Steam match" - use after Steam adds new entries',
   steamTags: 'Re-fetch Steam appdetails ignoring the local cache - picks up newly-added Steam categories',
+  genres: 'Retry unmatched titles and re-fetch metadata for games still missing genres',
   protondb:
     'Also retry appids previously cached as "no reports" and re-fetch rows that already have a tier',
 };
@@ -102,6 +107,18 @@ const REFRESH_HINTS = {
 //   noMatch  → cached as "no match" so the fetcher skips on a normal click.
 //              Only Shift+click (HLTB) can revisit.
 export function pendingForEnrich(key) {
+  if (key === 'genres') {
+    const cache = state.libraryMeta.genres?.by_key || {};
+    let unchecked = 0;
+    let noMatch = 0;
+    for (const g of allLibraryRows()) {
+      if (gameGenresCanonical(g).length) continue;
+      const entry = cache[`${g.store || 'steam'}:${g.id}`];
+      if (entry === false || (entry && !gameGenresCanonical(entry).length)) noMatch++;
+      else unchecked++;
+    }
+    return { unchecked, retry: 0, noMatch };
+  }
   if (key === 'hltb') {
     const cache = state.libraryMeta.hltb || {};
     const rows = allLibraryRows();
@@ -207,7 +224,7 @@ export function clickHintFor(src) {
 export function refreshHintFor(src) {
   if (!src.supportsRefresh) return null;
   const base = REFRESH_HINTS[src.key] || 'Re-fetch ignoring local cache (slower, full rebuild)';
-  if (src.key === 'hltb' || src.key === 'steamReviews') {
+  if (src.key === 'hltb' || src.key === 'steamReviews' || src.key === 'genres') {
     const pending = pendingForEnrich(src.key);
     if (pending?.noMatch > 0) {
       return `${base} (~${formatNum(pending.noMatch)} cached misses would be retried)`;
@@ -261,6 +278,7 @@ function coverageOf(rows, pred) {
 }
 
 const COVERAGE_FNS = {
+  genres: () => coverageOf(allLibraryRows(), g => gameGenresCanonical(g).length > 0),
   hltb: () => coverageOf(allLibraryRows(), g => g.hltb_main_hours != null),
   steamReviews: () => coverageOf(reviewableRows(), g => g.steam_review_percent != null),
   steamCovers: () => coverageOf(
@@ -311,11 +329,13 @@ export function coverageTooltipLine(key) {
     ? 'have HowLongToBeat hours'
     : key === 'steamReviews'
       ? 'have Steam review scores'
-      : key === 'steamTags'
-        ? 'have Steam-derived co-op tags'
-        : key === 'protondb'
-          ? 'have ProtonDB compatibility tiers'
-          : 'have artwork';
+      : key === 'genres'
+        ? 'have genres'
+        : key === 'steamTags'
+          ? 'have Steam-derived co-op tags'
+          : key === 'protondb'
+            ? 'have ProtonDB compatibility tiers'
+            : 'have artwork';
   let line = `${formatNum(covered)} of ${formatNum(total)} ${verb}.`;
   if (!pending) return line;
   if (pending.unchecked > 0) {
@@ -323,6 +343,9 @@ export function coverageTooltipLine(key) {
   } else if (pending.retry > 0 && key === 'steamReviews') {
     line += ` ${formatNum(pending.retry)} were tried before with no review score - clicking will re-check but rarely changes the number.`;
   } else if (pending.noMatch > 0) {
+    if (key === 'genres') {
+      return `${line} Remaining ${formatNum(pending.noMatch)} have no Steam match or genre data. Shift+click to retry.`;
+    }
     const src = key === 'hltb' ? 'HowLongToBeat' : 'Steam';
     line += ` Remaining ${formatNum(pending.noMatch)} have no match on ${src} - clicking won't add more.`;
   } else {

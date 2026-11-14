@@ -1,5 +1,6 @@
 import { GENRE_ALIASES } from './state.js';
 
+// Sync with shared/library_genres.py (checked by test_library_genres).
 export const NON_GENRE_TOKENS = new Set([
   "ps3", "ps4", "ps5", "psp", "ps vita", "psvita", "vita",
   "xbox", "xbox 360", "xbox one", "xbox series x", "xbox series s", "xbox series x|s", "xbox series x/s", "xbox series",
@@ -22,7 +23,9 @@ export function aliasCanonicalGenre(name) {
 }
 
 export function gameGenresCanonical(g) {
-  return [...new Set((g.genres || []).filter(x => !isPlatformToken(x)).map(aliasCanonicalGenre))];
+  const raw = Array.isArray(g.genres) ? g.genres : [];
+  return [...new Set(raw.filter(x => typeof x === 'string')
+    .map(x => x.trim()).filter(x => x && !isPlatformToken(x)).map(aliasCanonicalGenre))];
 }
 
 export function gameMatchesGenreFilters(g, genres, genreMode) {

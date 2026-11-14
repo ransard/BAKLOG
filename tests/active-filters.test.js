@@ -17,6 +17,18 @@ beforeEach(() => {
 });
 
 describe('collectActiveFilters', () => {
+  it('shows each active HLTB range bound independently', () => {
+    state.sessionPrefs.minHours = 5.5;
+    state.sessionPrefs.maxHours = 20;
+    expect(collectActiveFilters()).toEqual(expect.arrayContaining([
+      { kind: 'minHours', value: '5.5', label: 'HLTB ≥ 5.5h' },
+      { kind: 'maxHours', value: '20', label: 'HLTB ≤ 20h' },
+    ]));
+    state.sessionPrefs.minHours = 0;
+    state.sessionPrefs.maxHours = 200;
+    expect(collectActiveFilters().filter(p => ['minHours', 'maxHours'].includes(p.kind))).toEqual([]);
+  });
+
   it('omits dedup pill when library catalog is empty', () => {
     const pills = collectActiveFilters();
     expect(pills.some((p) => p.kind === 'dedup')).toBe(false);

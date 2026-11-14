@@ -1574,6 +1574,7 @@ export const fetcherRunner = (() => {
         steamReviews: ' --retry-misses',
         steamCovers: ' --retry-misses',
         steamTags: ' --refresh',
+        genres: ' --retry-misses --refresh',
         protondb: ' --retry-misses --refresh',
       };
       const cmdSuffix = refresh ? (refreshArgHint[key] || ' --refresh') : '';

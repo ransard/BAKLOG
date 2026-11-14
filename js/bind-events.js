@@ -19,6 +19,7 @@ import {
   persistCurrentSort,
   setCoopFilterMode,
   setPicksLimitForView,
+  syncFilterDomFromState,
 } from './prefs.js';
 import {
   renderTable,
@@ -342,7 +343,7 @@ export function bindEvents() {
     setCoopFilterMode(btn.dataset.coopMode);
     refreshFilterUI();
   });
-  // The 6 live filters are stored in state.sessionPrefs (single source of
+  // The live filters are stored in state.sessionPrefs (single source of
   // truth); every input event pushes the DOM value into state, then triggers
   // a debounced refresh. The min/max slider value labels also live here so
   // the readout follows the slider without code anywhere else having to know.
@@ -352,6 +353,7 @@ export function bindEvents() {
     unplayedOnly:     el => ({ key: "unplayedOnly",    val: !!el.checked }),
     earlyAccessOnly:  el => ({ key: "earlyAccessOnly", val: !!el.checked }),
     minRating:        el => ({ key: "minRating",       val: +el.value || 0 }),
+    minHours:         el => ({ key: "minHours",        val: +el.value || 0 }),
     maxHours:         el => ({ key: "maxHours",        val: +el.value || 0 }),
   };
   Object.entries(FILTER_DOM_TO_STATE).forEach(([id, extract]) => {
@@ -362,8 +364,11 @@ export function bindEvents() {
       state.sessionPrefs[key] = val;
       if (id === "minRating") {
         document.getElementById("minRatingVal").textContent = String(val);
-      } else if (id === "maxHours") {
-        document.getElementById("maxHoursVal").textContent = val >= 200 ? "200+" : String(val);
+      } else if (id === "minHours" || id === "maxHours") {
+        // Moving one bound past the other moves both, keeping the range valid.
+        if (id === "minHours" && val > state.sessionPrefs.maxHours) state.sessionPrefs.maxHours = val;
+        if (id === "maxHours" && val < state.sessionPrefs.minHours) state.sessionPrefs.minHours = val;
+        syncFilterDomFromState();
       }
       refreshFilterUIDebounced({ skipPicks: id === "search" });
     });

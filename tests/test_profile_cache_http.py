@@ -106,6 +106,21 @@ def test_missing_profile_cross_store_meta_stub_shape(
     assert data.get("no_steam_match") == []
 
 
+def test_genres_cache_is_scoped_and_has_empty_stub(profile_cache_server: str, tmp_path: Path) -> None:
+    create_profile("Work")
+    set_active_profile("work")
+    server._refresh_personal_paths()
+    data = _get_json(f"{profile_cache_server}/cache/genres_map.json")
+    assert data == {"fetched_at": None, "by_key": {}}
+    path = profile_paths.cache_json_path("genres_map.json", profile_id="work")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps({"by_key": {"gog:1": False}}), encoding="utf-8")
+    assert _get_json(f"{profile_cache_server}/cache/genres_map.json")["by_key"] == {"gog:1": False}
+    set_active_profile("default")
+    server._refresh_personal_paths()
+    assert _get_json(f"{profile_cache_server}/cache/genres_map.json")["by_key"] == {}
+
+
 def test_profiles_url_prefix_blocked(
     profile_cache_server: str,
     tmp_path: Path,

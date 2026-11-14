@@ -40,7 +40,7 @@ COMMANDS = _commands_from_manifest()
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Run enrichment scripts (HLTB, Steam reviews, cross-store images).",
+        description="Run library enrichment scripts (genres, HLTB, reviews, covers, co-op, ProtonDB).",
     )
     parser.add_argument(
         "command",

@@ -49,6 +49,8 @@ export function collectActiveFilters() {
   }
   const minR = +(sp.minRating || 0);
   if (minR > 0) pills.push({ kind: "minRating", value: String(minR), label: `Rating ≥ ${minR}%` });
+  const minH = +(sp.minHours || 0);
+  if (minH > 0) pills.push({ kind: "minHours", value: String(minH), label: `HLTB ≥ ${minH}h` });
   const maxH = sp.maxHours == null ? 200 : +sp.maxHours;
   if (maxH < 200) pills.push({ kind: "maxHours", value: String(maxH), label: `HLTB ≤ ${maxH}h` });
   if (state.prefs.hltbBucket != null) {

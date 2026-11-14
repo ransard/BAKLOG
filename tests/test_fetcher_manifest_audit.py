@@ -83,8 +83,8 @@ def test_manifest_keys_unique() -> None:
     assert len(keys) == len(set(keys))
 
 
-def test_manifest_has_27_fetchers() -> None:
-    assert len(ENTRIES) == 27
+def test_manifest_has_28_fetchers() -> None:
+    assert len(ENTRIES) == 28
 
 
 @pytest.mark.parametrize("entry", ENTRIES, ids=[e["key"] for e in ENTRIES])
@@ -235,6 +235,7 @@ ENRICH_CACHE_LOADERS: dict[str, str] = {
     "steamReviews": "loadSteamReviewCache",
     "steamCovers": "loadSteamCoversMeta",
     "steamTags": "loadSteamTagsMeta",
+    "genres": "loadGenresCache",
     "protondb": "loadProtondbCache",
 }
 

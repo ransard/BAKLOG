@@ -56,7 +56,7 @@ export function autoStaleLastRunKey() {
   return profileScopedStorageKey(LS_AUTO_STALE_LAST_RUN);
 }
 
-const ENRICH_ORDER = ['steamReviews', 'steamTags', 'steamCovers', 'protondb', 'hltb'];
+const ENRICH_ORDER = ['steamReviews', 'genres', 'steamTags', 'steamCovers', 'protondb', 'hltb'];
 
 let autoEnrichCooldownUntil = 0;
 const AUTO_ENRICH_COOLDOWN_MS = 3000;
